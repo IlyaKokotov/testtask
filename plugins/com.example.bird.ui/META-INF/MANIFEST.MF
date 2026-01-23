@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Bird UI
+Bundle-SymbolicName: com.example.bird.ui;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ com.example.bird.client
+Bundle-RequiredExecutionEnvironment: JavaSE-11
