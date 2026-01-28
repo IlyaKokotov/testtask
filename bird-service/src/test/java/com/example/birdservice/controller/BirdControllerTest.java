@@ -1,7 +1,7 @@
 package com.example.birdservice.controller;
 
-import com.example.birdservice.model.Bird;
-import com.example.birdservice.repository.BirdRepository;
+import com.example.birdservice.dto.BirdDto;
+import com.example.birdservice.service.BirdService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -10,7 +10,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Arrays;
-import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -24,15 +23,12 @@ public class BirdControllerTest {
     private MockMvc mockMvc;
 
     @MockBean
-    private BirdRepository birdRepository;
+    private BirdService birdService;
 
     @Test
     public void testGetAllBirds() throws Exception {
-        Bird bird = new Bird();
-        bird.setName("Sparrow");
-        bird.setColor("Brown");
-        
-        when(birdRepository.findAll()).thenReturn(Arrays.asList(bird));
+        BirdDto bird = new BirdDto(1L, "Sparrow", "Brown", 25.0, 15.0);
+        when(birdService.findAll(null, null)).thenReturn(Arrays.asList(bird));
 
         mockMvc.perform(get("/api/birds"))
                 .andExpect(status().isOk())
@@ -41,26 +37,20 @@ public class BirdControllerTest {
 
     @Test
     public void testCreateBird() throws Exception {
-        Bird bird = new Bird();
-        bird.setId(1L);
-        bird.setName("Robin");
-
-        when(birdRepository.save(any(Bird.class))).thenReturn(bird);
+        BirdDto bird = new BirdDto(1L, "Robin", "Red", 20.0, 10.0);
+        when(birdService.create(any(BirdDto.class))).thenReturn(bird);
 
         mockMvc.perform(post("/api/birds")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"name\": \"Robin\", \"color\": \"Red\"}"))
+                .content("{\"name\": \"Robin\", \"color\": \"Red\", \"weight\": 20.0, \"height\": 10.0}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("Robin"));
     }
 
     @Test
     public void testGetBirdById() throws Exception {
-        Bird bird = new Bird();
-        bird.setId(1L);
-        bird.setName("Eagle");
-
-        when(birdRepository.findById(1L)).thenReturn(Optional.of(bird));
+        BirdDto bird = new BirdDto(1L, "Eagle", "Brown", 1000.0, 50.0);
+        when(birdService.findById(1L)).thenReturn(bird);
 
         mockMvc.perform(get("/api/birds/1"))
                 .andExpect(status().isOk())

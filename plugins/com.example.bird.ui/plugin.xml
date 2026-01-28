@@ -3,16 +3,15 @@
 <plugin>
    <extension
          point="org.eclipse.ui.views">
-      <view
-            name="Bird View"
-            icon="icons/bird.gif"
-            category="com.example.bird"
-            class="com.example.bird.ui.BirdView"
-            id="com.example.bird.ui.BirdView">
-      </view>
       <category
             name="Bird Monitoring"
             id="com.example.bird">
       </category>
+      <view
+            name="Bird View"
+            category="com.example.bird"
+            class="com.example.bird.ui.BirdView"
+            id="com.example.bird.ui.BirdView">
+      </view>
    </extension>
 </plugin>

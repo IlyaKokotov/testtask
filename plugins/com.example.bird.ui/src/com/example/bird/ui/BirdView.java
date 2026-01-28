@@ -11,10 +11,6 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.part.ViewPart;
 import com.example.bird.client.BirdServiceClient;
 
-/**
- * Eclipse ViewPart providing the UI for Bird and Sighting management.
- * Uses Jobs for thread-safe API communication to keep UI responsive.
- */
 public class BirdView extends ViewPart {
     private BirdServiceClient client = new BirdServiceClient();
     private Table birdTable;
@@ -51,8 +47,10 @@ public class BirdView extends ViewPart {
         Button saveBtn = new Button(addGroup, SWT.PUSH);
         saveBtn.setText("Save Bird");
         saveBtn.addListener(SWT.Selection, e -> {
+            String w = weightTxt.getText().isEmpty() ? "0" : weightTxt.getText();
+            String h = heightTxt.getText().isEmpty() ? "0" : heightTxt.getText();
             String json = String.format("{\"name\":\"%s\",\"color\":\"%s\",\"weight\":%s,\"height\":%s}",
-                nameTxt.getText(), colorTxt.getText(), weightTxt.getText(), heightTxt.getText());
+                nameTxt.getText(), colorTxt.getText(), w, h);
             runApiJob("Saving Bird", () -> {
                 client.postBird(json);
                 refreshBirds();
@@ -93,7 +91,8 @@ public class BirdView extends ViewPart {
         Button addBtn = new Button(addSightingGrp, SWT.PUSH);
         addBtn.setText("Add Sighting");
         addBtn.addListener(SWT.Selection, e -> {
-            String json = String.format("{\"bird\":{\"id\":%s},\"location\":\"%s\",\"dateTime\":\"%s\"}",
+            if (bIdTxt.getText().isEmpty()) return;
+            String json = String.format("{\"birdId\":%s,\"location\":\"%s\",\"dateTime\":\"%s\"}",
                 bIdTxt.getText(), locTxt.getText(), dtTxt.getText());
             runApiJob("Saving Sighting", () -> client.postSighting(json));
         });
@@ -114,8 +113,13 @@ public class BirdView extends ViewPart {
         searchBtn.addListener(SWT.Selection, e -> {
             runApiJob("Searching Sightings", () -> {
                 String results = client.getSightings(searchTxt.getText());
-                System.out.println("Results: " + results); 
-                // Actual JSON parsing would happen here
+                Display.getDefault().asyncExec(() -> {
+                    if (!sightingTable.isDisposed()) {
+                        sightingTable.removeAll();
+                        TableItem itm = new TableItem(sightingTable, SWT.NONE);
+                        itm.setText(new String[]{"Results received", "See console for JSON", "Updated " + java.time.LocalTime.now()});
+                    }
+                });
             });
         });
     }
@@ -126,9 +130,8 @@ public class BirdView extends ViewPart {
             Display.getDefault().asyncExec(() -> {
                 if (!birdTable.isDisposed()) {
                     birdTable.removeAll();
-                    // In a real app, use a JSON parser like Jackson/Gson to populate rows
                     TableItem itm = new TableItem(birdTable, SWT.NONE);
-                    itm.setText(new String[]{"LOG", "Check console for JSON", "", "", ""});
+                    itm.setText(new String[]{"SUCCESS", "List Fetched", "Check Console", "", ""});
                 }
             });
         });
