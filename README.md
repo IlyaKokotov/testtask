@@ -19,6 +19,3 @@
    - Select the root folder of this repository.
    - **CHECK** "Search for nested projects".
    - Import `com.example.bird.client`, `com.example.bird.feature`, and `com.example.bird.ui`.
-3. **Running**:
-   - Right-click `com.example.bird.ui` -> `Run As` -> `Eclipse Application`.
-   - In the new instance: `Window -> Show View -> Other -> Bird Monitoring -> Bird View`.
