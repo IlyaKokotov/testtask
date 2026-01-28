@@ -15,6 +15,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Service implementation for managing bird sightings.
+ * Provides thread-safe operations for creating and searching sightings.
+ */
 @Service
 public class SightingServiceImpl implements SightingService {
 
@@ -24,17 +28,30 @@ public class SightingServiceImpl implements SightingService {
     @Autowired
     private BirdRepository birdRepository;
 
+    /**
+     * Search for sightings by bird name, location, and/or time interval.
+     * All parameters are optional and can be combined.
+     * 
+     * @param birdName partial bird name (case-insensitive), can be null
+     * @param location partial location (case-insensitive), can be null
+     * @param start start of time interval (inclusive), can be null
+     * @param end end of time interval (inclusive), can be null
+     * @return list of matching sightings
+     */
     @Override
     public List<SightingDto> search(String birdName, String location, LocalDateTime start, LocalDateTime end) {
-        List<Sighting> sightings;
-        if (birdName != null) sightings = sightingRepository.findByBird_NameContainingIgnoreCase(birdName);
-        else if (location != null) sightings = sightingRepository.findByLocationContainingIgnoreCase(location);
-        else if (start != null && end != null) sightings = sightingRepository.findByDateTimeBetween(start, end);
-        else sightings = sightingRepository.findAll();
-
+        // Use the combined query method that supports all filters simultaneously
+        List<Sighting> sightings = sightingRepository.findByFilters(birdName, location, start, end);
         return sightings.stream().map(this::convertToDto).collect(Collectors.toList());
     }
 
+    /**
+     * Create a new sighting record.
+     * 
+     * @param request sighting data including bird ID, location, and date-time
+     * @return created sighting DTO
+     * @throws ResourceNotFoundException if bird with given ID does not exist
+     */
     @Override
     @Transactional
     public SightingDto create(SightingRequestDto request) {
@@ -49,6 +66,12 @@ public class SightingServiceImpl implements SightingService {
         return convertToDto(sightingRepository.save(sighting));
     }
 
+    /**
+     * Convert a Sighting entity to a SightingDto.
+     * 
+     * @param sighting the entity to convert
+     * @return the corresponding DTO
+     */
     private SightingDto convertToDto(Sighting sighting) {
         SightingDto dto = new SightingDto();
         dto.setId(sighting.getId());

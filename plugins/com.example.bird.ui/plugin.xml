@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            name="Bird View"
+            icon="icons/bird.gif"
+            category="com.example.bird"
+            class="com.example.bird.ui.BirdView"
+            id="com.example.bird.ui.BirdView">
+      </view>
+      <category
+            name="Bird Monitoring"
+            id="com.example.bird">
+      </category>
+   </extension>
+</plugin>

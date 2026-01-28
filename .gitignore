@@ -12,12 +12,18 @@ out/
 .classpath
 .factorypath
 .project
-.settings/
 .springBeans
 .sts4-cache
 bin/
 !**/src/main/**/bin/
 !**/src/test/**/bin/
+
+### Eclipse - Ignore settings for non-plugin projects ###
+bird-service/.settings/
+.settings/
+
+### Eclipse - Keep settings for plugin projects ###
+!plugins/**/.settings/
 
 ### Maven ###
 target/
