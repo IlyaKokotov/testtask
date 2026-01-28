@@ -13,7 +13,7 @@ import com.example.bird.client.BirdServiceClient;
 public class BirdView extends ViewPart {
     public static final String ID = "com.example.bird.ui.views.BirdView";
 
-    private BirdServiceClient client = new BirdServiceClient();
+    private BirdServiceClient client;
     
     private Table birdTable;
     private Table sightingTable;
@@ -23,8 +23,15 @@ public class BirdView extends ViewPart {
 
     @Override
     public void createPartControl(Composite parent) {
-        TabFolder folder = new TabFolder(parent, SWT.NONE);
+        try {
+            this.client = new BirdServiceClient();
+        } catch (Exception e) {
+            Label errorLabel = new Label(parent, SWT.WRAP);
+            errorLabel.setText("Failed to initialize Service Client: " + e.getMessage());
+            return;
+        }
 
+        TabFolder folder = new TabFolder(parent, SWT.NONE);
         createBirdTab(folder);
         createSightingTab(folder);
     }
@@ -135,6 +142,7 @@ public class BirdView extends ViewPart {
     }
 
     private void handleAddBird() {
+        if (client == null) return;
         try {
             String json = String.format("{\"name\":\"%s\",\"color\":\"%s\",\"weight\":%s,\"height\":%s}",
                 birdNameInput.getText(), colorInput.getText(), weightInput.getText(), heightInput.getText());
@@ -147,6 +155,7 @@ public class BirdView extends ViewPart {
     }
 
     private void handleAddSighting() {
+        if (client == null) return;
         try {
             String json = String.format("{\"birdId\":%s,\"location\":\"%s\",\"dateTime\":\"%s\"}",
                 sBirdIdInput.getText(), locationInput.getText(), dateTimeInput.getText());
@@ -159,17 +168,18 @@ public class BirdView extends ViewPart {
     }
 
     private void refreshBirds() {
+        if (client == null) return;
         new Thread(() -> {
             try {
                 final String response = client.getBirds();
                 Display.getDefault().asyncExec(() -> {
-                    if (birdTable.isDisposed()) return;
+                    if (birdTable == null || birdTable.isDisposed()) return;
                     birdTable.removeAll();
                     new TableItem(birdTable, SWT.NONE).setText(new String[] {"Success", response, "", "", ""});
                 });
             } catch (Exception e) {
                 Display.getDefault().asyncExec(() -> {
-                    if (birdTable.isDisposed()) return;
+                    if (birdTable == null || birdTable.isDisposed()) return;
                     birdTable.removeAll();
                     new TableItem(birdTable, SWT.NONE).setText(new String[] {"Error", e.getMessage(), "", "", ""});
                 });
@@ -178,18 +188,19 @@ public class BirdView extends ViewPart {
     }
 
     private void refreshSightings() {
+        if (client == null) return;
         new Thread(() -> {
             try {
                 final String birdName = searchBirdNameInput.getText();
                 final String response = client.getSightings(birdName);
                 Display.getDefault().asyncExec(() -> {
-                    if (sightingTable.isDisposed()) return;
+                    if (sightingTable == null || sightingTable.isDisposed()) return;
                     sightingTable.removeAll();
                     new TableItem(sightingTable, SWT.NONE).setText(new String[] {"Success", response, "", ""});
                 });
             } catch (Exception e) {
                 Display.getDefault().asyncExec(() -> {
-                    if (sightingTable.isDisposed()) return;
+                    if (sightingTable == null || sightingTable.isDisposed()) return;
                     sightingTable.removeAll();
                     new TableItem(sightingTable, SWT.NONE).setText(new String[] {"Error", e.getMessage(), "", ""});
                 });
@@ -199,7 +210,7 @@ public class BirdView extends ViewPart {
 
     @Override
     public void setFocus() {
-        birdTable.setFocus();
+        if (birdTable != null) birdTable.setFocus();
     }
 }
 
