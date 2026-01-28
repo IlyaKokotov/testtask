@@ -10,7 +10,6 @@
       <view
             id="com.example.bird.ui.views.BirdView"
             name="Bird Monitoring View"
-            icon="icons/sample.png"
             category="com.example.bird.ui.category"
             class="com.example.bird.ui.BirdView">
       </view>

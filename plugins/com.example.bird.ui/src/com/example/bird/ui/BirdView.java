@@ -9,7 +9,6 @@ import com.example.bird.client.BirdServiceClient;
 
 /**
  * Main UI View for the Bird Monitoring System.
- * Provides forms for adding birds and sightings, and tables for displaying data.
  */
 public class BirdView extends ViewPart {
     public static final String ID = "com.example.bird.ui.views.BirdView";
@@ -38,7 +37,6 @@ public class BirdView extends ViewPart {
         composite.setLayout(new GridLayout(2, false));
         item.setControl(composite);
 
-        // --- Add Bird Form ---
         Group addGroup = new Group(composite, SWT.NONE);
         addGroup.setText("Add New Bird");
         addGroup.setLayout(new GridLayout(2, false));
@@ -64,17 +62,16 @@ public class BirdView extends ViewPart {
         btnAddBird.setText("Save Bird");
         btnAddBird.addListener(SWT.Selection, e -> handleAddBird());
 
-        // --- Bird List Table ---
         birdTable = new Table(composite, SWT.BORDER | SWT.FULL_SELECTION);
         birdTable.setHeaderVisible(true);
         birdTable.setLinesVisible(true);
         birdTable.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
 
-        String[] titles = { "ID", "Name", "Color", "Weight", "Height" };
+        String[] titles = { "Status", "Response Content", "", "", "" };
         for (String title : titles) {
             TableColumn column = new TableColumn(birdTable, SWT.NONE);
             column.setText(title);
-            column.setWidth(100);
+            column.setWidth(150);
         }
 
         Button btnRefresh = new Button(composite, SWT.PUSH);
@@ -90,7 +87,6 @@ public class BirdView extends ViewPart {
         composite.setLayout(new GridLayout(2, false));
         item.setControl(composite);
 
-        // --- Add Sighting Form ---
         Group addGroup = new Group(composite, SWT.NONE);
         addGroup.setText("Add Sighting");
         addGroup.setLayout(new GridLayout(2, false));
@@ -113,7 +109,6 @@ public class BirdView extends ViewPart {
         btnAddSighting.setText("Save Sighting");
         btnAddSighting.addListener(SWT.Selection, e -> handleAddSighting());
 
-        // --- Search/Filter ---
         Composite searchComp = new Composite(composite, SWT.NONE);
         searchComp.setLayout(new GridLayout(3, false));
         searchComp.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false, 2, 1));
@@ -126,17 +121,16 @@ public class BirdView extends ViewPart {
         btnSearch.setText("Search");
         btnSearch.addListener(SWT.Selection, e -> refreshSightings());
 
-        // --- Sightings List Table ---
         sightingTable = new Table(composite, SWT.BORDER | SWT.FULL_SELECTION);
         sightingTable.setHeaderVisible(true);
         sightingTable.setLinesVisible(true);
         sightingTable.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
 
-        String[] titles = { "ID", "Bird", "Location", "Date/Time" };
+        String[] titles = { "Status", "Response Content", "", "" };
         for (String title : titles) {
             TableColumn column = new TableColumn(sightingTable, SWT.NONE);
             column.setText(title);
-            column.setWidth(120);
+            column.setWidth(150);
         }
     }
 
@@ -165,27 +159,42 @@ public class BirdView extends ViewPart {
     }
 
     private void refreshBirds() {
-        try {
-            String response = client.getBirds();
-            birdTable.removeAll();
-            // Note: In a production app, use a JSON parser like Jackson/Gson.
-            // This is a simplified display of raw response for demonstration.
-            TableItem item = new TableItem(birdTable, SWT.NONE);
-            item.setText(new String[] {"Raw Data", response, "", "", ""});
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        new Thread(() -> {
+            try {
+                final String response = client.getBirds();
+                Display.getDefault().asyncExec(() -> {
+                    if (birdTable.isDisposed()) return;
+                    birdTable.removeAll();
+                    new TableItem(birdTable, SWT.NONE).setText(new String[] {"Success", response, "", "", ""});
+                });
+            } catch (Exception e) {
+                Display.getDefault().asyncExec(() -> {
+                    if (birdTable.isDisposed()) return;
+                    birdTable.removeAll();
+                    new TableItem(birdTable, SWT.NONE).setText(new String[] {"Error", e.getMessage(), "", "", ""});
+                });
+            }
+        }).start();
     }
 
     private void refreshSightings() {
-        try {
-            String response = client.getSightings(searchBirdNameInput.getText());
-            sightingTable.removeAll();
-            TableItem item = new TableItem(sightingTable, SWT.NONE);
-            item.setText(new String[] {"Raw Data", response, "", ""});
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        new Thread(() -> {
+            try {
+                final String birdName = searchBirdNameInput.getText();
+                final String response = client.getSightings(birdName);
+                Display.getDefault().asyncExec(() -> {
+                    if (sightingTable.isDisposed()) return;
+                    sightingTable.removeAll();
+                    new TableItem(sightingTable, SWT.NONE).setText(new String[] {"Success", response, "", ""});
+                });
+            } catch (Exception e) {
+                Display.getDefault().asyncExec(() -> {
+                    if (sightingTable.isDisposed()) return;
+                    sightingTable.removeAll();
+                    new TableItem(sightingTable, SWT.NONE).setText(new String[] {"Error", e.getMessage(), "", ""});
+                });
+            }
+        }).start();
     }
 
     @Override
@@ -194,20 +203,23 @@ public class BirdView extends ViewPart {
     }
 }
 
-/**
- * Helper class for simple dialogs.
- */
 class MessageDialog {
     public static void openInformation(Shell shell, String title, String message) {
-        MessageBox box = new MessageBox(Display.getDefault().getActiveShell(), SWT.ICON_INFORMATION | SWT.OK);
-        box.setText(title);
-        box.setMessage(message);
-        box.open();
+        Display.getDefault().asyncExec(() -> {
+            Shell activeShell = Display.getDefault().getActiveShell();
+            MessageBox box = new MessageBox(activeShell != null ? activeShell : new Shell(), SWT.ICON_INFORMATION | SWT.OK);
+            box.setText(title);
+            box.setMessage(message);
+            box.open();
+        });
     }
     public static void openError(Shell shell, String title, String message) {
-        MessageBox box = new MessageBox(Display.getDefault().getActiveShell(), SWT.ICON_ERROR | SWT.OK);
-        box.setText(title);
-        box.setMessage(message);
-        box.open();
+        Display.getDefault().asyncExec(() -> {
+            Shell activeShell = Display.getDefault().getActiveShell();
+            MessageBox box = new MessageBox(activeShell != null ? activeShell : new Shell(), SWT.ICON_ERROR | SWT.OK);
+            box.setText(title);
+            box.setMessage(message);
+            box.open();
+        });
     }
 }
