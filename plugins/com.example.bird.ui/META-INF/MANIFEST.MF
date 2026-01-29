@@ -1,15 +1,15 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Bird UI Plugin
+Bundle-Name: Bird Monitoring UI
 Bundle-SymbolicName: com.example.bird.ui;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: com.example.bird.ui.Activator
 Bundle-Vendor: Example
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
- com.example.bird.client;bundle-version="1.0.0"
+ com.example.bird.client,
+ com.google.gson;bundle-version="2.8.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Automatic-Module-Name: com.example.bird.ui
 Bundle-ActivationPolicy: lazy
-Export-Package: com.example.bird.ui,
- com.example.bird.ui.views
+Import-Package: org.osgi.framework;version="1.3.0"
