@@ -24,7 +24,6 @@ bird-service/.settings/
 
 ### Eclipse - Keep settings for plugin projects ###
 !plugins/**/.settings/
-!plugins/com.example.bird.ui/.project
 
 ### Maven ###
 target/
