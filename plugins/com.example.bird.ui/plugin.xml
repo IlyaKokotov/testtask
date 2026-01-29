@@ -11,7 +11,7 @@
             id="com.example.bird.ui.views.BirdView"
             name="Bird Monitoring View"
             category="com.example.bird.ui.category"
-            class="com.example.bird.ui.views.BirdView">
+            class="com.example.bird.ui.BirdView">
       </view>
    </extension>
 </plugin>
