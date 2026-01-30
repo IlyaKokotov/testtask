@@ -5,6 +5,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.part.ViewPart;
+import org.eclipse.jface.dialogs.MessageDialog;
 import com.example.bird.client.BirdServiceClient;
 
 /**
@@ -147,10 +148,10 @@ public class BirdView extends ViewPart {
             String json = String.format("{\"name\":\"%s\",\"color\":\"%s\",\"weight\":%s,\"height\":%s}",
                 birdNameInput.getText(), colorInput.getText(), weightInput.getText(), heightInput.getText());
             client.postBird(json);
-            MessageDialog.openInformation(null, "Success", "Bird added successfully");
+            showInfo("Success", "Bird added successfully");
             refreshBirds();
         } catch (Exception e) {
-            MessageDialog.openError(null, "Error", "Failed to add bird: " + e.getMessage());
+            showError("Error", "Failed to add bird: " + e.getMessage());
         }
     }
 
@@ -160,10 +161,10 @@ public class BirdView extends ViewPart {
             String json = String.format("{\"birdId\":%s,\"location\":\"%s\",\"dateTime\":\"%s\"}",
                 sBirdIdInput.getText(), locationInput.getText(), dateTimeInput.getText());
             client.postSighting(json);
-            MessageDialog.openInformation(null, "Success", "Sighting added successfully");
+            showInfo("Success", "Sighting added successfully");
             refreshSightings();
         } catch (Exception e) {
-            MessageDialog.openError(null, "Error", "Failed to add sighting: " + e.getMessage());
+            showError("Error", "Failed to add sighting: " + e.getMessage());
         }
     }
 
@@ -208,29 +209,20 @@ public class BirdView extends ViewPart {
         }).start();
     }
 
+    private void showInfo(String title, String message) {
+        Display.getDefault().asyncExec(() -> 
+            MessageDialog.openInformation(getSite().getShell(), title, message)
+        );
+    }
+
+    private void showError(String title, String message) {
+        Display.getDefault().asyncExec(() -> 
+            MessageDialog.openError(getSite().getShell(), title, message)
+        );
+    }
+
     @Override
     public void setFocus() {
         if (birdTable != null) birdTable.setFocus();
-    }
-}
-
-class MessageDialog {
-    public static void openInformation(Shell shell, String title, String message) {
-        Display.getDefault().asyncExec(() -> {
-            Shell activeShell = Display.getDefault().getActiveShell();
-            MessageBox box = new MessageBox(activeShell != null ? activeShell : new Shell(), SWT.ICON_INFORMATION | SWT.OK);
-            box.setText(title);
-            box.setMessage(message);
-            box.open();
-        });
-    }
-    public static void openError(Shell shell, String title, String message) {
-        Display.getDefault().asyncExec(() -> {
-            Shell activeShell = Display.getDefault().getActiveShell();
-            MessageBox box = new MessageBox(activeShell != null ? activeShell : new Shell(), SWT.ICON_ERROR | SWT.OK);
-            box.setText(title);
-            box.setMessage(message);
-            box.open();
-        });
     }
 }
