@@ -7,4 +7,6 @@ Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
 Export-Package: com.example.bird.client
 Require-Bundle: org.eclipse.core.runtime
+Import-Package: java.net,
+ java.net.http
 Automatic-Module-Name: com.example.bird.client

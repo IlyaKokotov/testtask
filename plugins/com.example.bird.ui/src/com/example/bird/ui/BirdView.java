@@ -25,10 +25,17 @@ public class BirdView extends ViewPart {
     @Override
     public void createPartControl(Composite parent) {
         try {
+            // Attempt to initialize the service client
             this.client = new BirdServiceClient();
-        } catch (Exception e) {
-            Label errorLabel = new Label(parent, SWT.WRAP);
-            errorLabel.setText("Failed to initialize Service Client: " + e.getMessage());
+        } catch (NoClassDefFoundError | Exception e) {
+            // Fallback UI if the bundle or its dependencies failed to load
+            Composite errorComp = new Composite(parent, SWT.NONE);
+            errorComp.setLayout(new GridLayout(1, false));
+            Label errorLabel = new Label(errorComp, SWT.WRAP);
+            errorLabel.setText("System Error: Failed to initialize BirdServiceClient.\n" +
+                             "This is usually caused by missing OSGi dependencies or an incompatible Java runtime.\n\n" +
+                             "Details: " + e.toString());
+            errorLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
             return;
         }
 
