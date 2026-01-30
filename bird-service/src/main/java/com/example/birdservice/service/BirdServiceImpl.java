@@ -6,6 +6,7 @@ import com.example.birdservice.exception.ResourceNotFoundException;
 import com.example.birdservice.model.Bird;
 import com.example.birdservice.repository.BirdRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -72,7 +73,11 @@ public class BirdServiceImpl implements BirdService {
         if (!birdRepository.existsById(id)) {
             throw new ResourceNotFoundException("Bird not found with id: " + id);
         }
-        birdRepository.deleteById(id);
+        try {
+            birdRepository.deleteById(id);
+        } catch (DataIntegrityViolationException e) {
+            throw new ConflictException("Cannot delete bird because it has existing sightings.");
+        }
     }
 
     private BirdDto convertToDto(Bird bird) {

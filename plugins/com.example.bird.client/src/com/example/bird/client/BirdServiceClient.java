@@ -1,9 +1,11 @@
 package com.example.bird.client;
 
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
 /**
@@ -43,13 +45,14 @@ public class BirdServiceClient {
     public String getSightings(String birdName) throws Exception {
         String url = BASE_URL + "/sightings";
         if (birdName != null && !birdName.isEmpty()) {
-            url += "?birdName=" + birdName.replace(" ", "%20");
+            url += "?birdName=" + URLEncoder.encode(birdName, StandardCharsets.UTF_8);
         }
         HttpRequest request = HttpRequest.newBuilder()
             .uri(URI.create(url))
             .GET()
             .build();
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() >= 400) throw new RuntimeException("HTTP " + response.statusCode());
         return response.body();
     }
 

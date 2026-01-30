@@ -8,5 +8,8 @@ Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
+ org.eclipse.swt,
+ org.eclipse.jface,
  com.example.bird.client
+Export-Package: com.example.bird.ui
 Automatic-Module-Name: com.example.bird.ui

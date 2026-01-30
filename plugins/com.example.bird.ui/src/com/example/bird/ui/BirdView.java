@@ -15,7 +15,6 @@ public class BirdView extends ViewPart {
     public static final String ID = "com.example.bird.ui.views.BirdView";
 
     private BirdServiceClient client;
-    
     private Table birdTable;
     private Table sightingTable;
     private Text birdNameInput, colorInput, weightInput, heightInput;
@@ -25,17 +24,16 @@ public class BirdView extends ViewPart {
     @Override
     public void createPartControl(Composite parent) {
         try {
-            // Attempt to initialize the service client
+            // Lazy initialization check
             this.client = new BirdServiceClient();
-        } catch (NoClassDefFoundError | Exception e) {
-            // Fallback UI if the bundle or its dependencies failed to load
+        } catch (Throwable t) {
             Composite errorComp = new Composite(parent, SWT.NONE);
             errorComp.setLayout(new GridLayout(1, false));
             Label errorLabel = new Label(errorComp, SWT.WRAP);
-            errorLabel.setText("System Error: Failed to initialize BirdServiceClient.\n" +
-                             "This is usually caused by missing OSGi dependencies or an incompatible Java runtime.\n\n" +
-                             "Details: " + e.toString());
-            errorLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+            errorLabel.setText("Initialization Error: Could not connect to client logic.\n" +
+                             "Check if com.example.bird.client bundle is resolved.\n" +
+                             "Details: " + t.getMessage());
+            errorLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
             return;
         }
 
@@ -47,7 +45,6 @@ public class BirdView extends ViewPart {
     private void createBirdTab(TabFolder folder) {
         TabItem item = new TabItem(folder, SWT.NONE);
         item.setText("Birds");
-
         Composite composite = new Composite(folder, SWT.NONE);
         composite.setLayout(new GridLayout(2, false));
         item.setControl(composite);
@@ -82,11 +79,11 @@ public class BirdView extends ViewPart {
         birdTable.setLinesVisible(true);
         birdTable.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
 
-        String[] titles = { "Status", "Response Content", "", "", "" };
+        String[] titles = { "Status", "Response Content" };
         for (String title : titles) {
             TableColumn column = new TableColumn(birdTable, SWT.NONE);
             column.setText(title);
-            column.setWidth(150);
+            column.setWidth(200);
         }
 
         Button btnRefresh = new Button(composite, SWT.PUSH);
@@ -97,7 +94,6 @@ public class BirdView extends ViewPart {
     private void createSightingTab(TabFolder folder) {
         TabItem item = new TabItem(folder, SWT.NONE);
         item.setText("Sightings");
-
         Composite composite = new Composite(folder, SWT.NONE);
         composite.setLayout(new GridLayout(2, false));
         item.setControl(composite);
@@ -141,11 +137,11 @@ public class BirdView extends ViewPart {
         sightingTable.setLinesVisible(true);
         sightingTable.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
 
-        String[] titles = { "Status", "Response Content", "", "" };
+        String[] titles = { "Status", "Response Content" };
         for (String title : titles) {
             TableColumn column = new TableColumn(sightingTable, SWT.NONE);
             column.setText(title);
-            column.setWidth(150);
+            column.setWidth(200);
         }
     }
 
@@ -183,13 +179,13 @@ public class BirdView extends ViewPart {
                 Display.getDefault().asyncExec(() -> {
                     if (birdTable == null || birdTable.isDisposed()) return;
                     birdTable.removeAll();
-                    new TableItem(birdTable, SWT.NONE).setText(new String[] {"Success", response, "", "", ""});
+                    new TableItem(birdTable, SWT.NONE).setText(new String[] {"Success", response});
                 });
             } catch (Exception e) {
                 Display.getDefault().asyncExec(() -> {
                     if (birdTable == null || birdTable.isDisposed()) return;
                     birdTable.removeAll();
-                    new TableItem(birdTable, SWT.NONE).setText(new String[] {"Error", e.getMessage(), "", "", ""});
+                    new TableItem(birdTable, SWT.NONE).setText(new String[] {"Error", e.getMessage()});
                 });
             }
         }).start();
@@ -204,32 +200,34 @@ public class BirdView extends ViewPart {
                 Display.getDefault().asyncExec(() -> {
                     if (sightingTable == null || sightingTable.isDisposed()) return;
                     sightingTable.removeAll();
-                    new TableItem(sightingTable, SWT.NONE).setText(new String[] {"Success", response, "", ""});
+                    new TableItem(sightingTable, SWT.NONE).setText(new String[] {"Success", response});
                 });
             } catch (Exception e) {
                 Display.getDefault().asyncExec(() -> {
                     if (sightingTable == null || sightingTable.isDisposed()) return;
                     sightingTable.removeAll();
-                    new TableItem(sightingTable, SWT.NONE).setText(new String[] {"Error", e.getMessage(), "", ""});
+                    new TableItem(sightingTable, SWT.NONE).setText(new String[] {"Error", e.getMessage()});
                 });
             }
         }).start();
     }
 
     private void showInfo(String title, String message) {
-        Display.getDefault().asyncExec(() -> 
-            MessageDialog.openInformation(getSite().getShell(), title, message)
-        );
+        Display.getDefault().asyncExec(() -> {
+            if (getSite() != null && getSite().getShell() != null)
+                MessageDialog.openInformation(getSite().getShell(), title, message);
+        });
     }
 
     private void showError(String title, String message) {
-        Display.getDefault().asyncExec(() -> 
-            MessageDialog.openError(getSite().getShell(), title, message)
-        );
+        Display.getDefault().asyncExec(() -> {
+            if (getSite() != null && getSite().getShell() != null)
+                MessageDialog.openError(getSite().getShell(), title, message);
+        });
     }
 
     @Override
     public void setFocus() {
-        if (birdTable != null) birdTable.setFocus();
+        if (birdTable != null && !birdTable.isDisposed()) birdTable.setFocus();
     }
 }
